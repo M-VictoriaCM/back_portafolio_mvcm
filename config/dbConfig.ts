@@ -9,7 +9,7 @@ export const sequelize = new Sequelize({
     password: config.db.password,
     host: config.db.host,
     dialect: config.db.dialect,
-    models: [path.resolve(__dirname, "../src/Model")], // 👈 Esto escanea todos los modelos
+    models: [path.resolve(__dirname, "../src/models")], // 👈 Esto escanea todos los modelos
 });
 
 const initializeDB = async () => {
