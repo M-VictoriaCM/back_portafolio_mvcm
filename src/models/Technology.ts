@@ -20,12 +20,14 @@ export class Technology extends Model{
     @Column(DataType.STRING)
     nombre !: string;
 
-    @AllowNull(false)
+    @AllowNull(true)
     @Length({min:2, max:255})
+    @Default('https://robohash.org/tech123?size=150x150')
     @Column(DataType.STRING)
     image !: string;    
 
     @ForeignKey(() => Category)
+    @AllowNull(false)
     @Column(DataType.UUID)
     categoryId !: string;
     

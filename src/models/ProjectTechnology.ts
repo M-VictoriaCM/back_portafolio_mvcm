@@ -1,4 +1,4 @@
-import { BelongsTo, Column, DataType, Default, ForeignKey, IsUUID, Model, PrimaryKey, Table } from "sequelize-typescript";
+import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, IsUUID, Model, PrimaryKey, Table } from "sequelize-typescript";
 import { Project } from "./Project";
 import { Technology } from "./Technology";
 
@@ -14,6 +14,7 @@ export class ProjectTechnology extends Model{
     declare id: string;
 
     @ForeignKey(() => Project)
+    @AllowNull(false)
     @Column(DataType.UUID)
     projectId !: string;
     
@@ -21,6 +22,7 @@ export class ProjectTechnology extends Model{
     Project !: Project;
 
     @ForeignKey(() => Technology)
+    @AllowNull(false)
     @Column(DataType.UUID)
     technologyId !: string;
     

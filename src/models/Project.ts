@@ -35,6 +35,7 @@ export class Project extends Model{
     repository !: string;
 
     @ForeignKey(() => User)
+    @AllowNull(false)
     @Column(DataType.UUID)
     userId !: string;
     

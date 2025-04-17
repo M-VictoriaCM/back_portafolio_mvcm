@@ -1,6 +1,7 @@
 
-import { AllowNull, Column, DataType, Default, HasMany, IsEmail, IsUUID, Length, Model, PrimaryKey, Table, Unique } from "sequelize-typescript";
+import { AllowNull, BeforeCreate, BeforeUpdate, Column, DataType, Default, HasMany, IsEmail, IsUUID, Length, Model, PrimaryKey, Table, Unique } from "sequelize-typescript";
 import { Project } from "./Project";
+import bcrypt from 'bcrypt';
 
 @Table({
     tableName: 'users',
@@ -33,4 +34,17 @@ export class User extends Model{
     @HasMany(() => Project)
     Project!: Project[];
 
+    @BeforeCreate
+    @BeforeUpdate
+    static async hashPassword(instance: User) {
+        if(instance.changed('password')){
+            const saltRounds = 10;
+            instance.password= await bcrypt.hash(instance.password, saltRounds);
+        }
+    }
+    async validPassword(password:string):Promise<boolean>{
+        return await bcrypt.compare(password, this.password);
+    
+    }
+        
 }
