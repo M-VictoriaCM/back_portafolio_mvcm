@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { Technology } from "../models/Technology";
-import { ValidationError } from "sequelize";
+import { handleServerError } from "../utils/handleServerError";
 
 export const getAllTechnology = async (req: Request, res: Response) => {
     try {
@@ -15,16 +15,7 @@ export const getAllTechnology = async (req: Request, res: Response) => {
         res.status(500).json({ error: 'Internal server error'});        
     }
 }
-const handleServerError = (res: Response, error: unknown) => {
-    console.error(error);
-    if (error instanceof ValidationError) {
-        return res.status(400).json({
-            message: "Validation error",
-            errors: error.errors.map(err => err.message)
-        });
-    }
-    return res.status(500).json({ error: 'Internal server error' });
-};
+
 
 export const createTechnology = async (req: Request, res: Response) => {
     try {

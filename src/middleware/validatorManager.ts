@@ -1,5 +1,5 @@
 
-import { body, validationResult } from 'express-validator';
+import { body, param, validationResult } from 'express-validator';
 import { Response, NextFunction, Request } from 'express';
 
 export const validationResultExpress = (
@@ -42,3 +42,19 @@ export const bodyLoginValidator = [
     validationResultExpress
   ];
   
+export const bodyLinkValidator=[
+  body("repository", "Formato de link incorrecto")
+  .optional()
+    .trim()
+    .isURL().withMessage("Formato de link incorrecto"),
+  validationResultExpress
+];
+
+export const paramlinkValidator =[
+  param("id")
+    .trim()
+    .notEmpty().withMessage("El parámetro id es obligatorio")
+    .isUUID(4).withMessage("Formato de UUID no válido")
+    .escape(),
+  validationResultExpress,
+];

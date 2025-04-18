@@ -26,11 +26,13 @@ export class Project extends Model{
 
     @AllowNull(true)
     @Length({min:2, max:255})
+    @Default('https://robohash.org/tech123?size=150x150')
     @Column(DataType.STRING)
     image !: string;
 
     @AllowNull(true)
     @Length({min:2, max:255})
+    @Default('https://github.com/M-VictoriaCM')
     @Column(DataType.STRING)
     repository !: string;
 

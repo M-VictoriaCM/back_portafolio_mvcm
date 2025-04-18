@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { Category } from "../models/Category";
-import { ValidationError } from "sequelize";
+import { handleServerError } from "../utils/handleServerError";
+
 
 
 export const createCategory = async (req: Request, res: Response) => {
@@ -14,14 +15,7 @@ export const createCategory = async (req: Request, res: Response) => {
         res.status(201).json(category);
 
     } catch (error) {
-        console.log(error);
-        if(error instanceof ValidationError){
-            return res.status(400).json({
-                message: "Validation error",
-                errors: error.errors.map(err => err.message)
-            });
-        }
-        res.status(500).json({ error: 'Internal server error'});
+        handleServerError(res, error);
         
     }
 }
@@ -29,7 +23,7 @@ export const createCategory = async (req: Request, res: Response) => {
 
 export const getAllCategory = async (req: Request, res: Response) => {
     try {
-        const categories = await Category.findAll();
+        const categories = await Category.findAll({attributes: { exclude: ['id'] }});
         if(!categories){
             return res.status(404).json({ error: 'Categories not found'});
         }
@@ -44,7 +38,8 @@ export const getAllCategory = async (req: Request, res: Response) => {
 export const getCategoryById = async (req: Request, res: Response)=>{
     try{
         const { id } = req.params;
-        const category = await Category.findByPk(id);
+        const category = await Category.findByPk(id, {
+            attributes: { exclude: ['id'] } });
         if(!category){
             return res.status(404).json({ error: 'Category not found'});
         }
@@ -62,6 +57,10 @@ export const updateCategory = async (req: Request, res: Response)=>{
             return res.status(404).json({ error: 'Category not found'});
         }
         await category.update({ title, icon });
+
+        const updateCategory = await Category.findByPk(id, {
+            attributes: { exclude: ['id'] } });
+        
         res.status(200).json(category);
 
     } catch (error) {
