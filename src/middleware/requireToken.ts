@@ -2,20 +2,32 @@ import { Request, Response, NextFunction } from "express";
 import jwt, { TokenExpiredError } from "jsonwebtoken";
 import { tokenVerificationErrors } from "../utils/tokenManager";
 import { JwtPayload } from "jsonwebtoken";
+import { AuthenticatedRequest } from "../types/express/AuthenticatedRequest"; 
 
-export const requireToken =(req:Request, res:Response, next:NextFunction)=>{
+// Tipo personalizado para el payload
+interface MyJwtPayload extends JwtPayload {
+    uid: string;
+}
+
+export const requireToken =(req:AuthenticatedRequest, res:Response, next:NextFunction)=>{
     try {
-        const token =req.headers.authorization?.split(' ')[1];
-        if(!token){
-            throw new Error('No token provided');
+        const autHeader =req.headers.authorization;
+        if(!autHeader || !autHeader.startsWith('Bearer')){
+            return res.status(401).send({error:'Token no proporcionado'});
         }
-        
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
-        const uid = decoded.uid as string;
-        req.uid = uid;
+        const token= autHeader.split(' ')[1];
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as MyJwtPayload;
+
+        if(!decoded.uid){
+            return res.status(401).send({error:'Token inváalidoo'});
+        }
+        const uid = decoded.uid;
         next();
     } catch (error) {
+        if(error instanceof TokenExpiredError){
+            return res.status(401).send({error:'Token expirado'});
+        }
         const message = tokenVerificationErrors[(error as Error).message] || "Token inválido";
-        res.status(401).send({ error: message });
+        return res.status(401).send({error:message});
     }
 }

@@ -12,6 +12,11 @@ export const login = async({email, password}: {email: string, password: string})
     if(!user){
         throw new Error("El usuario no existe")
     }
+    // Verificar la contraseña
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if(!isPasswordValid){
+        throw new Error("La contraseña es incorrecta");
+    }
     const {token, expiresIn} = generateToken(user.id);
     return {token, expiresIn}
 }
