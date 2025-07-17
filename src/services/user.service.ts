@@ -1,16 +1,17 @@
 import {auth} from '../../config/firebase';
 import { User } from '../models/User';
+import { CustomError } from '../utils/CustomError';
 import { generateToken } from '../utils/tokenManager';
 import bcrypt from "bcrypt";
 
 
 export const login = async({email, password}: {email: string, password: string}) => {
     if(!email || !password){
-        throw new Error("Todos los campos son obligatorios")
+        throw new CustomError("Todos los campos son obligatorios", 400)
     }
     const user = await User.findOne({where:{email}});
     if(!user){
-        throw new Error("El usuario no existe")
+        throw new CustomError("El usuario no existe", 404);
     }
     // Verificar la contraseña
     const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -18,7 +19,11 @@ export const login = async({email, password}: {email: string, password: string})
         throw new Error("La contraseña es incorrecta");
     }
     const {token, expiresIn} = generateToken(user.id);
-    return {token, expiresIn}
+    return {
+        token, 
+        expiresIn,
+        uid:user.id
+    }
 }
 
 export const register = async ({email, name, password}: any)=>{
@@ -53,6 +58,7 @@ export const getUserInfo = async (uid: string) => {
     return{
         email:user.email,
         name: user.name,
+        
     };
 };
 

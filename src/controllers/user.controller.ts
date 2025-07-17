@@ -1,28 +1,28 @@
 import { Request, Response } from "express";
 import * as userService from "../services/user.service";
-import { AuthenticatedRequest } from "../types/express/AuthenticatedRequest";
+import { generateRefreshToken, generateToken } from "../utils/tokenManager";
+import { User } from "../models/User";
+import { CustomError } from "../utils/CustomError";
 
 
 //login
 export const login = async (req: Request, res: Response) => {
   try {
 
-    const { token, expiresIn } = await userService.login(req.body);
+    const { token, expiresIn, uid } = await userService.login(req.body);
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: !(process.env.MODO === "developer"),
-    });
+    generateRefreshToken(uid, res);
     res.status(200).json({ token, expiresIn });
   } catch (error) {
     console.error(error);
-    res.status(400).json({ error: "Error al iniciar sesión" });
+    const status = error instanceof CustomError ? error.statusCode : 400;
+    res.status(status).json({ error: error instanceof Error ? error.message : "Error al iniciar sesión" })
   }
 }
 
 
 //Registrarse
-export const register = async (req: AuthenticatedRequest, res: Response) => {
+export const register = async (req: Request, res: Response) => {
   try {
     const result = await userService.register(req.body);
     res.cookie("token", result.token, {
@@ -36,33 +36,32 @@ export const register = async (req: AuthenticatedRequest, res: Response) => {
   }
 };
 
-export const infoUser = async (req: AuthenticatedRequest, res: Response) => {
+export const infoUser = async (req: Request, res: Response): Promise<Response> => {
   try {
-    if (!req.uid) {
-      return res.status(401).json({ error: 'Unauthorized' });
+    const uid = res.locals.uid;
+
+    const user = await User.findByPk(uid);
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
     }
-    const userData = await userService.getUserInfo(req.uid);
-    return res.json(userData);
 
+    return res.json({ email: user.email });
   } catch (error) {
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error(error);
+    return res.status(500).json({ error: "Error de servidor" });
   }
-}
+};
 
-export const refreshToken = (req: AuthenticatedRequest, res: Response) => {
+export const refreshToken = async (req: Request, res: Response): Promise<void> => {
   try {
-    const result = userService.getRefreshToken(req.uid);
-    res.status(200).json(result);
+    const { token, expiresIn } = generateToken(res.locals.uid);
+    res.status(200).json({ token, expiresIn });
   } catch (error) {
     console.log(error);
-    return res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: "error de server" });
   }
-}
-export const logout = (req: Request, res: Response) => {
-  res.clearCookie('refreshToken');
-  res.json({ message: 'Logout successful' });
+};
 
-}
 export const resetPassword = async (req: Request, res: Response) => {
 
   try {
@@ -91,6 +90,9 @@ export const resetPassword = async (req: Request, res: Response) => {
   }
 }
 
-
+export const logout = (req:Request, res:Response) => {
+  res.clearCookie("refreshToken");
+  res.json({ ok: true });
+};
 
 //login-social

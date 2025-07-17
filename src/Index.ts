@@ -22,9 +22,10 @@ app.use(cors({
             return callback(null, origin);
         }
         return callback(new Error('Not allowed by CORS'));
-        }
-    
-}));
+        },
+        credentials:true,
+    }
+    ));
 
 app.use(express.json());
 app.use(cookieParser());

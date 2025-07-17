@@ -1,33 +1,33 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { TokenExpiredError } from "jsonwebtoken";
 import { tokenVerificationErrors } from "../utils/tokenManager";
-import { JwtPayload } from "jsonwebtoken";
-import { AuthenticatedRequest } from "../types/express/AuthenticatedRequest"; 
+import { JwtPayload } from "jsonwebtoken"; 
 
 // Tipo personalizado para el payload
-interface MyJwtPayload extends JwtPayload {
-    uid: string;
+interface JwtPayloadWithUid extends jwt.JwtPayload {
+  uid: string;
 }
 
-export const requireToken =(req:AuthenticatedRequest, res:Response, next:NextFunction)=>{
-    try {
-        const autHeader =req.headers.authorization;
-        if(!autHeader || !autHeader.startsWith('Bearer')){
-            return res.status(401).send({error:'Token no proporcionado'});
-        }
-        const token= autHeader.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as MyJwtPayload;
-
-        if(!decoded.uid){
-            return res.status(401).send({error:'Token inváalidoo'});
-        }
-        const uid = decoded.uid;
-        next();
-    } catch (error) {
-        if(error instanceof TokenExpiredError){
-            return res.status(401).send({error:'Token expirado'});
-        }
-        const message = tokenVerificationErrors[(error as Error).message] || "Token inválido";
-        return res.status(401).send({error:message});
+export const requireToken = (req: Request, res: Response, next: NextFunction):void => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader?.startsWith('Bearer ')) {
+      res.status(401).json({ error: 'Formato de token inválido' });
+      return;
     }
-}
+
+    const token = authHeader.split(' ')[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayloadWithUid;
+
+    if (!decoded.uid) {
+      res.status(401).json({ error: 'Token inválido' });
+      return;
+    }
+
+    req.uid = decoded.uid; // TypeScript ahora lo aceptará
+    next();
+  } catch (error) {
+    // Manejo de errores existente
+  }
+};

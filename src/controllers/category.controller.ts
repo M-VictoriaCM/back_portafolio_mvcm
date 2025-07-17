@@ -10,6 +10,7 @@ export const createCategory = async (req: Request, res: Response) => {
         if (!title || !icon) {
             return res.status(400).json({ error: 'Title and icon are required' });
         }
+         console.log("Usuario autenticado con ID:", req.uid); 
         const category = await categoryService.createCategory(title, icon);
         res.status(201).json({message:'Categoria creada',category});
     } catch (error) {

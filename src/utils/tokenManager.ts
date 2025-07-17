@@ -4,6 +4,9 @@ import { Response } from "express";
 export const generateToken = (uid:string)=>{
     const expiresIn = 60 * 15;
 
+    if(!uid || typeof uid !== 'string'){
+        throw new Error("UID invalido");
+    }
     try {
         const token = jwt.sign({uid}, process.env.JWT_SECRET!, {expiresIn});
         return { token, expiresIn};
@@ -16,14 +19,17 @@ export const generateRefreshToken=(uid:string, res:Response)=>{
     const expiresIn = 60 * 60*24*30;
     try {
         const refreshToken= jwt.sign({uid}, process.env.JWT_REFRESH!, {expiresIn});
+        
         res.cookie("refreshToken", refreshToken,{
             httpOnly:true,
             secure:!(process.env.MODO === "developer"),
-            expires : new Date(Date.now() + expiresIn * 1000)
+            expires : new Date(Date.now() + expiresIn * 1000),
+            sameSite: "lax"
         });
         
     } catch (error) {
         console.log(error);
+        throw new Error("Error al generar el token");
     }
     
 

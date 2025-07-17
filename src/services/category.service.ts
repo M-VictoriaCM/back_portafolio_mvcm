@@ -1,7 +1,7 @@
 import { Category } from "../models/Category";
 
 export const createCategory = async (title: string, icon: string) => {
-    return await Category.create({ title, icon });
+    return await Category.create({ title, icon});
 }
 
 export const getAllCategory = async () => {
