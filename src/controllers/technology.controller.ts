@@ -15,19 +15,6 @@ export const createTechnology = async (req: Request, res: Response) => {
     }
 }
 
-export const getAllTechnology = async (req: Request, res: Response) => {
-    try {
-        const technologies = await technologyService.getAllTechnology();
-        if(!technologies){
-            return res.status(404).json({ error: 'Technologies not found'});
-        }
-        res.status(200).json(technologies);
-    } catch (error) {
-        console.log(error);
-        handleServerError(res, error);        
-    }
-}
-
 
 export const getTechnologyById = async (req: Request, res: Response) => {
     try{
@@ -54,7 +41,41 @@ export const updateTechnology = async (req: Request, res: Response) => {
     }catch(error){
         handleServerError(res, error);
     }
-
-
+}
+//Muestro todas las tecnologias ordenadas por id de categoria
+export const getAllTechnologyByCategory = async(req: Request, res: Response)=>{
+    try {
+    const technologies = await technologyService.getAllTechnologyByCategory();
+    res.status(200).json({ technologies });
+  } catch (error) {
+    console.error(error);
+    handleServerError(res, error);
+  }
 }
 
+//Elimino una categoria
+export const deleteTechnology = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const deleted = await technologyService.deleteTechnology(id);
+        if (!deleted){
+            return res.status(404).json({ error: 'Technology not found' });
+        }
+        res.status(200).json({ message: 'Tecnologia eliminada correctamente' });
+    } catch (error) {
+        handleServerError(res, error);
+    }
+};
+
+//Muestro todas las Tecnologias
+export const getAllTechnology = async (_req: Request, res: Response)=>{
+    try {
+        const technologies = await technologyService.getAllTechnology();
+        if(!technologies){
+            return res.status(404).json({ error: 'Technologies not found'});
+        }
+        res.status(200).json(technologies);
+    } catch (error) {
+        handleServerError(res, error);    
+    }
+};

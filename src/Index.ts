@@ -18,7 +18,10 @@ const whiteList=[process.env.ORIGIN1, process.env.ORIGIN2];
 
 app.use(cors({
     origin:function(origin, callback){
+        console.log(origin);
+
         if(!origin || whiteList.includes(origin)){
+            
             return callback(null, origin);
         }
         return callback(new Error('Not allowed by CORS'));
@@ -30,8 +33,6 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
-
-
 // Agrega esta ruta básica
 app.use('/api/users', userRouter);
 app.use('/api/categories', categoryRouter);
@@ -41,9 +42,6 @@ app.use('/api/projects', projectRouter);
 app.get('/', (req, res) => {
     res.send('API corriendo');
 });
-
-
-
 
 
 const main =async()=>{

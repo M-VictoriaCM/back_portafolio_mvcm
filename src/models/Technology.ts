@@ -1,8 +1,8 @@
-import { Model } from "sequelize-typescript";
+import { BelongsToMany, Model } from "sequelize-typescript";
 import { AllowNull, Column, DataType, Default, ForeignKey, IsUUID, Length, PrimaryKey, Table, BelongsTo } from "sequelize-typescript";
 import { Category } from "./Category";
-
-
+import { ProjectTechnology } from "./ProjectTechnology";
+import { Project } from "./Project";
 
 @Table({
     tableName:'technologies',
@@ -33,5 +33,9 @@ export class Technology extends Model{
     
     @BelongsTo(() => Category)
     category !: Category;
+
+     // Relación M:N con proyectos
+    @BelongsToMany(() => Project, () => ProjectTechnology)
+    projects!: Project[];
 
 }

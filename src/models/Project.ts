@@ -1,5 +1,7 @@
-import { AllowNull, BelongsTo, Column, DataType, Default, ForeignKey, IsUUID, Length, Model, PrimaryKey, Table } from "sequelize-typescript";
+import { AllowNull, BelongsTo, BelongsToMany, Column, DataType, Default, ForeignKey, IsUUID, Length, Model, PrimaryKey, Table } from "sequelize-typescript";
 import { User } from "./User";
+import { Technology } from "./Technology";
+import { ProjectTechnology } from "./ProjectTechnology";
 
 
 
@@ -43,6 +45,10 @@ export class Project extends Model{
     
     @BelongsTo(() => User)
     user !: User;
+
+     // Relación M:N con tecnologías
+    @BelongsToMany(() => Technology, () => ProjectTechnology)
+    technologies!: Technology[];
 
 
 }

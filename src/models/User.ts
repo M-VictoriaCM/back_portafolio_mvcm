@@ -1,6 +1,8 @@
 
-import { AllowNull, BeforeCreate, BeforeUpdate, Column, DataType, Default, HasMany, IsEmail, IsUUID, Length, Model, PrimaryKey, Table, Unique } from "sequelize-typescript";
+import { AllowNull, BeforeCreate, BeforeUpdate,  Column, DataType, Default, HasMany, IsEmail, IsUUID, Length, Model, PrimaryKey, Table, Unique } from "sequelize-typescript";
 import { Project } from "./Project";
+import { Study } from "./Study";
+import { Badge } from "./Badge"; 
 import bcrypt from 'bcrypt';
 
 @Table({
@@ -24,7 +26,18 @@ export class User extends Model{
     @Length({min: 2, max:255})
     @Column(DataType.STRING)
     name !: string;
+
+    @Column(DataType.STRING)
+    fullName ?: string;
     
+    @Column(DataType.STRING)
+    urlAvatar ?: string;
+
+    @Column(DataType.TEXT)
+    aboutMe ?: string;
+
+    @Column(DataType.JSON)
+    socialLinks ?: {linkedin ?: string, github ?: string};
 
     @AllowNull(false)
     @Length({min: 6, max:255})
@@ -34,6 +47,12 @@ export class User extends Model{
     @HasMany(() => Project)
     Project!: Project[];
 
+    @HasMany(() => Study)
+    studies !: Study[];
+
+    @HasMany(() => Badge)
+    badges !: Badge[];
+    
     @BeforeCreate
     @BeforeUpdate
     static async hashPassword(instance: User) {

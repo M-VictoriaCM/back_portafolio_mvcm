@@ -15,16 +15,18 @@ export class Category extends Model{
     declare id: string;
 
     @AllowNull(false)
-    @Length({min:2, max:255})
+    @Length({ min: 2, max: 255 })
     @Column(DataType.STRING)
-    title !: string;
+    title!: string;
 
-    @AllowNull(false)
-    @Length({min:2, max:255})
+    @AllowNull(true)
+    @Length({ min: 2, max: 255 })
+    @Default("default-icon")
     @Column(DataType.STRING)
-    icon !: string;
+    icon!: string;
 
-    @HasMany(() => Technology)
-    technologies!: Technology[];
+    // 👇 Relación inversa
+    @HasMany(() => Technology, { as: "skills" })
+    skills!: Technology[];
 
 }
