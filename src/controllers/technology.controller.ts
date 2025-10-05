@@ -4,11 +4,11 @@ import { handleServerError } from "../utils/handleServerError";
 
 export const createTechnology = async (req: Request, res: Response) => {
     try {
-        const { nombre, image, categoryId} = req.body;
-        if(!nombre ||  !categoryId){
-            res.status(400).json({error:'Todos los campos son obligatorios'});
+        const userId = req.uid;
+        if(!userId){
+            return res.status(401).json({error:"No autorizado"});
         }
-        const technology =await technologyService.createTechnology(nombre, image, categoryId);
+        const technology = await technologyService.createTechnology(req.body, userId);
         res.status(201).json({message:'Tecnologia creada', technology});
     } catch (error) {
         handleServerError(res, error);

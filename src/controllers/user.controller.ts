@@ -40,7 +40,10 @@ export const infoUser = async (req: Request, res: Response): Promise<Response> =
   try {
     const uid = res.locals.uid;
 
-    const user = await User.findByPk(uid);
+    const user = await User.findByPk(uid, {
+      attributes:{exclude:["password"]},
+      include:["technologies","categories","studies","badges"]
+    });
     if (!user) {
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
@@ -95,4 +98,29 @@ export const logout = (req:Request, res:Response) => {
   res.json({ ok: true });
 };
 
+
 //login-social
+
+export const updateProfile = async(req: Request, res: Response)=>{
+  try {
+    const uid = res.locals.uid;
+    const {name, fullName, urlAvatar, aboutMe, socialLinks} = req.body;
+
+    const user = await userService.updateProfile(name, fullName, urlAvatar, aboutMe, socialLinks); 
+    if(!user){
+      return res.status(404).json({error:"Usuario no encontrado"});
+    }
+    user.fullName = fullName ?? user.fullName;
+    user.urlAvatar = urlAvatar ?? user.urlAvatar;
+    user.aboutMe = aboutMe ?? user.aboutMe;
+    user.socialLinks = socialLinks ?? user.socialLinks;
+    await user.save();
+    res.status(200).json({
+            message:"Perfil actualizado correctamente", user
+        });
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({error:"Error al actualizar el perfil"});
+  }
+};

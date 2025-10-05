@@ -2,8 +2,11 @@ import { Category } from "../models/Category";
 
 
 //Crear categoría
-export const createCategory = async (title: string, icon: string) => {
-    return await Category.create({ title, icon});
+export const createCategory = async (data: any, userId: string)=> {
+    return await Category.create({
+        ...data,
+        userId
+    });
 }
 //Obtener todas
 export const getAllCategory = async () => {

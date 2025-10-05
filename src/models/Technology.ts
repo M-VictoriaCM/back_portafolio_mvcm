@@ -3,6 +3,7 @@ import { AllowNull, Column, DataType, Default, ForeignKey, IsUUID, Length, Prima
 import { Category } from "./Category";
 import { ProjectTechnology } from "./ProjectTechnology";
 import { Project } from "./Project";
+import { User } from "./User";
 
 @Table({
     tableName:'technologies',
@@ -30,6 +31,13 @@ export class Technology extends Model{
     @AllowNull(false)
     @Column(DataType.UUID)
     categoryId !: string;
+
+    @ForeignKey(() => User)
+    @Column({
+    type: DataType.UUID,
+    allowNull: false,
+    })
+    userId!: string;
     
     @BelongsTo(() => Category)
     category !: Category;

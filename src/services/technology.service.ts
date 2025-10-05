@@ -2,8 +2,11 @@
 import { Category } from "../models/Category";
 import { Technology } from "../models/Technology";
 
-export const createTechnology= async(nombre: string, image: string, categoryId: string) => {
-    return await Technology.create({ nombre, image, categoryId });
+export const createTechnology= async(data:any, userId: string) => {
+    return await Technology.create({
+        ...data,
+        userId
+     });
 }
 export const getAllTechnologyByCategory = async () => {
   const categories = await Category.findAll({

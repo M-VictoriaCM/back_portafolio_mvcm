@@ -1,6 +1,7 @@
-import { Model } from "sequelize-typescript";
+import { ForeignKey, Model } from "sequelize-typescript";
 import { AllowNull, Column, DataType, Default, HasMany, IsUUID, Length, PrimaryKey, Table } from "sequelize-typescript";
 import { Technology } from "./Technology";
+import { User } from "./User";
 
 
 @Table({
@@ -24,6 +25,13 @@ export class Category extends Model{
     @Default("default-icon")
     @Column(DataType.STRING)
     icon!: string;
+
+    @ForeignKey(() => User)
+    @Column({
+        type: DataType.UUID,
+        allowNull: false,
+    })
+  userId !: string;
 
     // 👇 Relación inversa
     @HasMany(() => Technology, { as: "skills" })

@@ -84,3 +84,7 @@ export const resetPassword = async (email: string, oldPassword: string, newPassw
     user.password = hashedPassword;
     await user.save();
 }
+
+export const updateProfile = async(name:string, fullName: string, urlAvatar: string, aboutMe:string, socialLinks: string[]) =>{
+    return await User.create({ name, fullName, urlAvatar, aboutMe, socialLinks });
+};

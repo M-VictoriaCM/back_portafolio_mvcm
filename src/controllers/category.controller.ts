@@ -1,19 +1,20 @@
 import { Request, Response } from "express";
 import * as categoryService from "../services/category.service";
 import { handleServerError } from "../utils/handleServerError";
-import { Category } from "../models/Category";
 
 
 // Crear una nueva categoría
 export const createCategory = async (req: Request, res: Response) => {
     try {
-        const { title, icon } = req.body;
-        if (!title || !icon) {
-            return res.status(400).json({ error: 'Title and icon are required' });
+        const userId = req.uid;
+        
+        if(!userId){
+            return res.status(401).json({error:"No autorizado"});
         }
 
-        const newCategory = await categoryService.createCategory(title, icon);
+        const newCategory = await categoryService.createCategory(req.body, userId);
         res.status(201).json({message:'Categoria creada',newCategory});
+
     } catch (error) {
         handleServerError(res, error);
     }

@@ -4,6 +4,8 @@ import { Project } from "./Project";
 import { Study } from "./Study";
 import { Badge } from "./Badge"; 
 import bcrypt from 'bcrypt';
+import { Technology } from "./Technology";
+import { Category } from "./Category";
 
 @Table({
     tableName: 'users',
@@ -49,6 +51,12 @@ export class User extends Model{
 
     @HasMany(() => Study)
     studies !: Study[];
+
+    @HasMany(()=> Technology)
+    technologyId !: Technology[];
+
+    @HasMany(() => Category)
+    categories !: Category[];
 
     @HasMany(() => Badge)
     badges !: Badge[];

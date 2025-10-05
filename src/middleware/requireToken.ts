@@ -29,5 +29,10 @@ export const requireToken = (req: Request, res: Response, next: NextFunction):vo
     next();
   } catch (error) {
     // Manejo de errores existente
+    if (error instanceof TokenExpiredError) {
+      res.status(401).json({ error: 'El token ha expirado' });
+    }else{
+      res.status(401).json({ error: tokenVerificationErrors[(error as Error).message as keyof typeof tokenVerificationErrors] || 'Token inválido' });
+    }
   }
 };
