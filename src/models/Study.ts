@@ -1,10 +1,14 @@
 import { PrimaryKey, Model, IsUUID, DataType, Default, Column, Table, ForeignKey, BelongsTo } from "sequelize-typescript";
 import { User } from "./User";
 
+/**
+ * Modelo de Estudio
+*/
 @Table({
     tableName: "studies",
     timestamps: false,
 })
+
 export class Study extends Model{
    @PrimaryKey
     @IsUUID(4)

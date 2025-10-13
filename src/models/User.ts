@@ -24,16 +24,19 @@ export class User extends Model{
     @Column(DataType.STRING)
     email !: string;
 
-    @AllowNull(false)
-    @Length({min: 2, max:255})
+    @AllowNull(true)
+    @Unique
+    @Length({ min: 3, max: 50 })
     @Column(DataType.STRING)
-    name !: string;
+    username?: string;
 
     @Column(DataType.STRING)
     fullName ?: string;
     
+    @AllowNull(true)
+    @Default('https://robohash.org/tech123?size=50x50')
     @Column(DataType.STRING)
-    urlAvatar ?: string;
+    urlAvatar?: string;
 
     @Column(DataType.TEXT)
     aboutMe ?: string;

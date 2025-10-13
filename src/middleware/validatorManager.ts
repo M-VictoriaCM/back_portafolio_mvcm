@@ -2,6 +2,13 @@
 import { body, param, validationResult } from 'express-validator';
 import { Response, NextFunction, Request } from 'express';
 
+/**
+ * 
+ * @param req 
+ * @param res 
+ * @param next 
+ * @returns void
+ */
 export const validationResultExpress = (
     req: Request,
     res: Response,
@@ -15,6 +22,9 @@ export const validationResultExpress = (
     next();
   };
 
+/**
+ * Validadores para el registro y login de usuarios, links y parámetros
+ */
 export const bodyRegisterValidator=[
     body("email", "Formator de email incorrecto")
     .trim()
@@ -31,6 +41,9 @@ export const bodyRegisterValidator=[
     
 ];
 
+/**
+ * Validadores para el login de usuarios
+ */
 export const bodyLoginValidator = [
     body("email", "Formato de email incorrecto")
       .trim()
@@ -41,7 +54,10 @@ export const bodyLoginValidator = [
       .isLength({ min: 6 }),
     validationResultExpress
   ];
-  
+
+/**
+ * Validadores para los links y parámetros
+ */
 export const bodyLinkValidator=[
   body("repository", "Formato de link incorrecto")
   .optional()
@@ -50,6 +66,9 @@ export const bodyLinkValidator=[
   validationResultExpress
 ];
 
+/**
+ * Validador para parámetros
+ */
 export const paramlinkValidator =[
   param("id")
     .trim()

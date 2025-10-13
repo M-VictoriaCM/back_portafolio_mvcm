@@ -9,6 +9,9 @@ import userRouter from './routes/user.routes';
 import categoryRouter from './routes/category.routes';
 import technologyRouter from './routes/technology.routes';
 import projectRouter from './routes/project.routes';
+import studyRouter from './routes/study.routes';
+import BadgeRouter from './routes/badge.routes';
+
 
 dotenv.config();
 
@@ -38,6 +41,8 @@ app.use('/api/users', userRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/technologies', technologyRouter);
 app.use('/api/projects', projectRouter);
+app.use('/api/studies', studyRouter);
+app.use('/api/badges', BadgeRouter);
 
 app.get('/', (req, res) => {
     res.send('API corriendo');

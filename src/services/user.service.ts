@@ -26,8 +26,8 @@ export const login = async({email, password}: {email: string, password: string})
     }
 }
 
-export const register = async ({email, name, password}: any)=>{
-    if(!email || !name || !password){
+export const register = async ({email, username, password}: any)=>{
+    if(!email || !username || !password){
         throw new Error("Todos los campos son obligatorios")
     }
     const existinUser = await auth.getUserByEmail(email).catch(()=>null);
@@ -38,10 +38,10 @@ export const register = async ({email, name, password}: any)=>{
     if(localUser){
         throw new Error("El usuario ya existe en la base de datos");
     }
-    const userRecord = await auth.createUser({ email, password, displayName: name});
+    const userRecord = await auth.createUser({ email, password, displayName: username});
     
     const newUser = await User.create({
-        email: userRecord.email, name: userRecord.displayName,
+        email: userRecord.email, username: userRecord.displayName,
         password: password,
         firebaseUid: userRecord.uid
     });
@@ -49,18 +49,6 @@ export const register = async ({email, name, password}: any)=>{
     const firebaseToken = await auth.createCustomToken(userRecord.uid);
     return {token, firebaseToken};
 }
-
-export const getUserInfo = async (uid: string) => {
-    const user = await User.findByPk(uid);
-    if(!user){
-        throw new Error("El usuario no existe")
-    }
-    return{
-        email:user.email,
-        name: user.name,
-        
-    };
-};
 
 export const getRefreshToken = (uid:string)=>{
     if(!uid){
@@ -85,6 +73,78 @@ export const resetPassword = async (email: string, oldPassword: string, newPassw
     await user.save();
 }
 
-export const updateProfile = async(name:string, fullName: string, urlAvatar: string, aboutMe:string, socialLinks: string[]) =>{
-    return await User.create({ name, fullName, urlAvatar, aboutMe, socialLinks });
+export const updateProfile = async(
+    username:string | null, 
+    fullName: string | null, 
+    aboutMe:string | null, 
+    socialLinks: string[] | null,
+    userId: string
+) =>{
+    const user = await User.findByPk(userId);
+    if(!user){  
+        return null;
+    }
+    await user.update({username, fullName, aboutMe, socialLinks});
+    return user;
+
 };
+
+export const getProfile = async (userId: string) => {
+  const user = await User.findByPk(userId, {
+    attributes: [
+      "username",
+      "fullName",
+      "aboutMe",
+      "socialLinks",
+      "urlAvatar" // si quieres el avatar
+    ]
+  });
+
+  if (!user) return null;
+
+// Transformar a objeto plano y parsear socialLinks
+  return {
+    username: user.username,
+    fullName: user.fullName,
+    aboutMe: user.aboutMe,
+    urlAvatar: user.urlAvatar,
+    socialLinks: user.socialLinks ? (typeof user.socialLinks === 'string' ? JSON.parse(user.socialLinks) : user.socialLinks) : {}
+  };
+};
+
+
+export const updateAvatar = async (userId: string, urlAvatar: string) => {
+     try {
+    const user = await User.findByPk(userId);
+
+    if (!user) {
+      return null;
+    }
+
+    user.urlAvatar = urlAvatar; // 🔹 actualiza el campo
+    await user.save(); // 🔹 guarda los cambios
+
+    return user;
+  } catch (error) {
+    console.error("❌ Error al actualizar el avatar:", error);
+    throw new Error("No se pudo actualizar el avatar");
+  }
+}
+
+
+export const getPublicProfile= async() =>{
+  const user = await User.findOne({
+        attributes:['username', 'fullName', 'aboutMe', 'urlAvatar', 'socialLinks'],
+    });
+    if(!user){
+        return null;
+    }
+    return {
+        username: user.username,
+        fullName: user.fullName,
+        aboutMe: user.aboutMe,
+        urlAvatar: user.urlAvatar,
+        socialLinks: user.socialLinks ? (typeof user.socialLinks === 'string' ? JSON.parse(user.socialLinks) : user.socialLinks) : {}
+    }
+}
+

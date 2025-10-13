@@ -2,6 +2,12 @@ import { Request, Response } from "express";
 import * as technologyService from "../services/technology.service";
 import { handleServerError } from "../utils/handleServerError";
 
+interface updateTechnologyBody{
+    nombre: string; 
+    image: string;
+    categoryId: string;
+}
+
 export const createTechnology = async (req: Request, res: Response) => {
     try {
         const userId = req.uid;
@@ -9,7 +15,10 @@ export const createTechnology = async (req: Request, res: Response) => {
             return res.status(401).json({error:"No autorizado"});
         }
         const technology = await technologyService.createTechnology(req.body, userId);
-        res.status(201).json({message:'Tecnologia creada', technology});
+        res.status(201).json({
+            message:'Tecnologia creada', 
+            technology
+        });
     } catch (error) {
         handleServerError(res, error);
     }
@@ -29,15 +38,21 @@ export const getTechnologyById = async (req: Request, res: Response) => {
     }
 }
 export const updateTechnology = async (req: Request, res: Response) => {
-    const { id } = req.params;
     try{
-        const {nombre, image, categoryId}= req.body;
-
-        const technology = await technologyService.updateTechnology(id, nombre, image, categoryId);
-        if(!technology){
+        const userId = req.uid;
+        if(!userId){
+            return res.status(401).json({error:"No autorizado"});
+        }
+        const { id } = req.params;
+        const { nombre, image, categoryId } = req.body as updateTechnologyBody;
+        const updateTechnology = await technologyService.updateTechnology(id, nombre, image, categoryId);
+        if(!updateTechnology ){
             return res.status(404).json({ error: 'Technology not found'});    
         }
-        res.status(200).json(technology);
+        res.status(200).json({
+            message: 'Tecnologia actualizada correctamente',
+            technology: updateTechnology
+        });
     }catch(error){
         handleServerError(res, error);
     }
@@ -56,8 +71,12 @@ export const getAllTechnologyByCategory = async(req: Request, res: Response)=>{
 //Elimino una categoria
 export const deleteTechnology = async (req: Request, res: Response) => {
     try {
+        const userId = req.uid;
+        if(!userId){
+            return res.status(401).json({error:"No autorizado"});
+        }
         const { id } = req.params;
-        const deleted = await technologyService.deleteTechnology(id);
+        const deleted = await technologyService.deleteTechnology(id, userId);
         if (!deleted){
             return res.status(404).json({ error: 'Technology not found' });
         }

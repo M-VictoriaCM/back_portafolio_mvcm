@@ -3,6 +3,11 @@ import * as categoryService from "../services/category.service";
 import { handleServerError } from "../utils/handleServerError";
 
 
+interface UpdateCategoryBody {
+  title: string;
+  icon: string;
+}
+
 // Crear una nueva categoría
 export const createCategory = async (req: Request, res: Response) => {
     try {
@@ -24,9 +29,6 @@ export const createCategory = async (req: Request, res: Response) => {
 export const getAllCategory = async (_req: Request, res: Response) => {
     try {
         const categories = await categoryService.getAllCategory();
-        if (!categories) {
-            return res.status(404).json({ error: 'Categories not found' });
-        }
         res.status(200).json({categories});
     } catch (error) {
         handleServerError(res, error);
@@ -39,7 +41,7 @@ export const getCategoryById = async (req: Request, res: Response) => {
         const { id } = req.params;
         const category = await categoryService.getCategoryById(id);
         if (!category) {
-            return res.status(404).json({ error: 'Category not found' });
+            return res.status(404).json({ error: 'Categoria no encontrada' });
         }
         res.status(200).json(category);
     } catch (error) {
@@ -50,14 +52,22 @@ export const getCategoryById = async (req: Request, res: Response) => {
 //Actualizo una categoría
 export const updateCategory = async (req: Request, res: Response) => {
     try {
+        const userId = req.uid;
+        
+        if(!userId){
+            return res.status(401).json({error:"No autorizado"});
+        }
+
         const { id } = req.params;
-        const { title, icon } = req.body;
-        const updateCategory = await categoryService.updateCategory(id, title, icon);
+        const { title, icon } = req.body as UpdateCategoryBody;
+        
+        const updateCategory = await categoryService.updateCategory(id, title, icon, userId);
         if (!updateCategory) {
-            return res.status(404).json({ error: 'Category not found' });
+            return res.status(404).json({ error: 'Categoría no encontrada' });
         }
         res.status(200).json({
-            message:"Categoría actualizada correctamente",category :updateCategory
+            message:"Categoría actualizada correctamente",
+            category :updateCategory
         });
     } catch (error) {
         handleServerError(res, error);
@@ -68,10 +78,14 @@ export const updateCategory = async (req: Request, res: Response) => {
 //Elimino una categoría
 export const deleteCategory = async (req: Request, res: Response) => {
     try {
+        const userId = req.uid;
+        if(!userId){
+            return res.status(401).json({error:"No autorizado"});
+        }
         const { id } = req.params;
-        const deleted = await categoryService.deleteCategory(id);
+        const deleted = await categoryService.deleteCategory(id, userId);
         if (!deleted) {
-            return res.status(404).json({ error: 'Category not found' });
+            return res.status(404).json({ error: 'Categoría no encontrada' });
         }
         res.status(200).json({ message: 'Categoría eliminada correctamente' });
     } catch (error) {

@@ -30,8 +30,8 @@ export const updateTechnology= async(id: string, nombre: string, image: string, 
     return technology;
 }
 
-export const deleteTechnology= async(id: string)=>{
-  const technology = await Technology.findByPk(id);
+export const deleteTechnology= async(id: string, userId: string)=>{
+  const technology = await Technology.findOne({ where: { id, userId } });
   if(!technology){
     return null;
   }

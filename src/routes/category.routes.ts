@@ -2,13 +2,14 @@ import { Router, RequestHandler } from "express";
 import { createCategory, getAllCategory, getCategoryById, updateCategory, deleteCategory } from "../controllers/category.controller";
 import { requireToken } from "../middleware/requireToken";
 import { paramlinkValidator } from "../middleware/validatorManager";
+import { categoryValidatorBody } from "../middleware/categoryValidatorBody";
 
 const router = Router();
 
 router.get('/', getAllCategory as RequestHandler);
-router.post('/', requireToken, createCategory as RequestHandler);
-router.get('/:id',paramlinkValidator, getCategoryById as RequestHandler);
-router.put('/:id', paramlinkValidator, requireToken, updateCategory as RequestHandler);
+router.post('/', requireToken, categoryValidatorBody as any, createCategory as RequestHandler);
+router.get('/:id', paramlinkValidator, getCategoryById as RequestHandler);
+router.put('/:id', paramlinkValidator, requireToken, categoryValidatorBody as any, updateCategory as RequestHandler);
 router.delete('/:id', requireToken, deleteCategory as RequestHandler);
 
 

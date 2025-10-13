@@ -3,9 +3,22 @@ import * as userService from "../services/user.service";
 import { generateRefreshToken, generateToken } from "../utils/tokenManager";
 import { User } from "../models/User";
 import { CustomError } from "../utils/CustomError";
+import { handleServerError } from "../utils/handleServerError";
 
+interface updateProfileBody {
+  username ?: string, 
+  fullName ?: string, 
+  urlAvatar ?: string, 
+  aboutMe ?:string, 
+  socialLinks ?:string
+}  
 
-//login
+/**
+ * Iniciar sesión
+ * @param req 
+ * @param res 
+ * @return void
+ */
 export const login = async (req: Request, res: Response) => {
   try {
 
@@ -20,8 +33,12 @@ export const login = async (req: Request, res: Response) => {
   }
 }
 
-
-//Registrarse
+/**
+ * Controlador de registro
+ * @param req 
+ * @param res 
+ * @return void
+ */
 export const register = async (req: Request, res: Response) => {
   try {
     const result = await userService.register(req.body);
@@ -36,25 +53,9 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
-export const infoUser = async (req: Request, res: Response): Promise<Response> => {
-  try {
-    const uid = res.locals.uid;
-
-    const user = await User.findByPk(uid, {
-      attributes:{exclude:["password"]},
-      include:["technologies","categories","studies","badges"]
-    });
-    if (!user) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
-    }
-
-    return res.json({ email: user.email });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: "Error de servidor" });
-  }
-};
-
+/*
+* Controlador para refrescar el token
+*/
 export const refreshToken = async (req: Request, res: Response): Promise<void> => {
   try {
     const { token, expiresIn } = generateToken(res.locals.uid);
@@ -65,6 +66,12 @@ export const refreshToken = async (req: Request, res: Response): Promise<void> =
   }
 };
 
+/**
+ * Controlador para resetear la contraseña
+ * @param req 
+ * @param res 
+ * @return void
+ */
 export const resetPassword = async (req: Request, res: Response) => {
 
   try {
@@ -93,6 +100,11 @@ export const resetPassword = async (req: Request, res: Response) => {
   }
 }
 
+/**
+ * Controlador para cerrar sesión
+ * @param req 
+ * @param res 
+ */
 export const logout = (req:Request, res:Response) => {
   res.clearCookie("refreshToken");
   res.json({ ok: true });
@@ -101,26 +113,101 @@ export const logout = (req:Request, res:Response) => {
 
 //login-social
 
+/**
+ * Controlador para actualizar el perfil del usuario
+ * @param req 
+ * @param res 
+ */
 export const updateProfile = async(req: Request, res: Response)=>{
   try {
-    const uid = res.locals.uid;
-    const {name, fullName, urlAvatar, aboutMe, socialLinks} = req.body;
+    const userId = req.uid;
+    if(!userId){
+      return res.status(401).json({error:"No autorizado"});
+    }
+    const {username, fullName, aboutMe, socialLinks} = req.body as updateProfileBody;
 
-    const user = await userService.updateProfile(name, fullName, urlAvatar, aboutMe, socialLinks); 
-    if(!user){
+     const parsedLinks = socialLinks ? JSON.parse(socialLinks) : null;
+
+    const updateUser = await userService.updateProfile(
+      username ?? null, 
+      fullName ?? null,
+      aboutMe ?? null, 
+      parsedLinks,
+      userId 
+    ); 
+    if(!updateUser){
       return res.status(404).json({error:"Usuario no encontrado"});
     }
-    user.fullName = fullName ?? user.fullName;
-    user.urlAvatar = urlAvatar ?? user.urlAvatar;
-    user.aboutMe = aboutMe ?? user.aboutMe;
-    user.socialLinks = socialLinks ?? user.socialLinks;
-    await user.save();
-    res.status(200).json({
-            message:"Perfil actualizado correctamente", user
-        });
+   res.status(200).json({
+    message:"Perfil actualizado correctamente",
+    updateUser
+  });
     
   } catch (error) {
+    handleServerError(res, error);
+  }
+};
+
+/**
+ * Controlador para mostrar los datos del usuario
+ * @param req 
+ * @param res 
+ */
+export const getProfile = async (req: Request, res: Response) => {
+  try {
+    const userId = req.uid;
+    if (!userId) return res.status(401).json({ error: "No autorizado" });
+
+    const user = await userService.getProfile(userId);
+    if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+
+    res.status(200).json({
+      message: "Perfil obtenido correctamente",
+      user
+    });
+  } catch (error) {
+    handleServerError(res, error);
+  }
+};
+
+/**
+ * Controlador para actualizar el perfil
+ * @param req 
+ * @param res 
+ */
+export const updateAvatar = async (req: Request, res: Response) => {
+  try {
+    const userId = req.uid;
+    if (!userId) {
+      return res.status(401).json({ error: "No autorizado" });
+    }
+    const {urlAvatar} = req.body;
+    
+    const user = await userService.updateAvatar(userId, urlAvatar);
+    if(!user ){
+      return res.status(404).json({ error: 'Avatar not found'});    
+    }
+    res.status(200).json({
+      message: 'Avatar actualizado correctamente',
+      user});
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+export const getPublicProfile = async (req: Request, res: Response) => {
+  try {
+   
+    const user = await userService.getPublicProfile();
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+    res.status(200).json({
+      message: 'Perfil obtenido correctamente',
+      user
+    });
+  } catch (error) {
     console.error(error);
-    return res.status(500).json({error:"Error al actualizar el perfil"});
+    res.status(500).json({ error: 'Error interno del servidor' });
   }
 };

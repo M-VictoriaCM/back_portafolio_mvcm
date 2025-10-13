@@ -17,8 +17,13 @@ export const getCategoryById = async (id: string) => {
     return await Category.findByPk(id);
 }
 //Actualizar
-export const updateCategory = async (id: string, title: string, icon: string) => {
-    const category = await Category.findByPk(id);
+export const updateCategory = async (
+    id: string, 
+    title: string, 
+    icon: string, 
+    userId: string
+) => {
+    const category = await Category.findOne({where:{id,userId}});
     if (!category) {
         return null;
     }
@@ -27,8 +32,8 @@ export const updateCategory = async (id: string, title: string, icon: string) =>
 }
 
 //Eliminar
-export const deleteCategory = async (id: string) => {
-    const category = await Category.findByPk(id);
+export const deleteCategory = async (id: string, userId: string) => {
+    const category = await Category.findOne({ where: { id, userId } });
     if (!category) {
         return null;
     }
