@@ -11,15 +11,15 @@ interface UpdateCategoryBody {
 // Crear una nueva categoría
 export const createCategory = async (req: Request, res: Response) => {
     try {
-        const userId = req.uid;
-        
+        const userId = req.uid; 
         if(!userId){
             return res.status(401).json({error:"No autorizado"});
         }
-
         const newCategory = await categoryService.createCategory(req.body, userId);
-        res.status(201).json({message:'Categoria creada',newCategory});
-
+        res.status(201).json({
+            message:'Categoria creada',
+            newCategory
+        });
     } catch (error) {
         handleServerError(res, error);
     }

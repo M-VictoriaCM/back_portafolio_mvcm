@@ -7,6 +7,7 @@ import { Badge } from "../models/Badge";
  * @returns Nueva insignia creada
  */
 export const createBadge = async (data: any, userId: string) => {
+     console.log('📥 DATA RECIBIDA EN EL SERVICIO:', data);
     return await Badge.create({
         ...data, 
         userId

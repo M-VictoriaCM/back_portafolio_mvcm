@@ -22,6 +22,8 @@ export const createBadge = async (req: Request, res: Response) => {
             return res.status(401).json({error:"No autorizado"});
         }
         const newBadge = await badgeService.createBadge(req.body, userId);
+
+        console.log(newBadge, 'nueva insignia creada');
         res.status(201).json({
             message:'Insignia creada',
             newBadge
