@@ -38,6 +38,12 @@ export class Project extends Model{
     @Column(DataType.STRING)
     repository !: string;
 
+    @AllowNull(true)
+    @Length({min:2, max:255})
+    @Default('https://m-victoriacm.github.io')
+    @Column(DataType.STRING)
+    urlDemo !: string;
+
     @ForeignKey(() => User)
     @AllowNull(false)
     @Column(DataType.UUID)
