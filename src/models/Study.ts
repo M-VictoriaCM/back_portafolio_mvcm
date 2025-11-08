@@ -27,6 +27,9 @@ export class Study extends Model{
 
     @Column(DataType.INTEGER) //este campo es opcional
     endYear ?: number;
+    
+    @Column(DataType.ENUM('universitario', 'bachiller', 'curso'))
+    type !: 'universitario' | 'bachiller' | 'curso'
 
     @ForeignKey(()=> User)
     @Column(DataType.UUID)

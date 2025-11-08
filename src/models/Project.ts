@@ -21,9 +21,14 @@ export class Project extends Model{
     @Column(DataType.STRING)
     title !: string;
 
-    @AllowNull(false)
+    @AllowNull(true)
     @Length({min:2, max:255})
     @Column(DataType.STRING)
+    intro !: string;
+
+    @AllowNull(false)
+    @Length({min:2, max:2000})
+    @Column(DataType.TEXT)
     description !: string;
 
     @AllowNull(true)

@@ -1,5 +1,5 @@
 import { Project } from "../models/Project";
-
+import { Technology } from "../models/Technology";
 /**
  * Crea un nuevo proyecto
  * @param data, información del proyecto
@@ -14,7 +14,7 @@ export const createProject = async (data: any, userId: string) => {
  * @returns todos los proyectos
  */
 export const getAllProject = async () => {
-    return await Project.findAll();
+    return await Project.findAll({include: ['technologies']});
 }
 /**
  * Muestra un proyecto por su ID
@@ -22,12 +22,13 @@ export const getAllProject = async () => {
  * @returns proyecto encontrado o null
  */
 export const getProjectById = async (id: string) => {
-    return await Project.findByPk(id);
+    return await Project.findByPk(id, {include: ['technologies']});
 }
 /**
  * Actualiza un proyecto
  * @param id, id del proyecto
  * @param title, título del proyecto
+ * @param intro, introducción del proyecto
  * @param description, descripción del proyecto
  * @param image, imagen del proyecto
  * @param repository, repositorio del proyecto
@@ -35,12 +36,12 @@ export const getProjectById = async (id: string) => {
  * @param userId, id del usuario que actualiza el proyecto
  * @returns proyecto actualizado o null
  */
-export const updateProject = async (id: string, title: string, description: string, image: string, repository: string,urlDemo: string, userId: string) => {
+export const updateProject = async (id: string, title: string, intro:string, description: string, image: string, repository: string,urlDemo: string, userId: string) => {
     const project = await Project.findByPk(id);
     if (!project) {
         return null;
     }
-    await project.update({ title, description, image, repository, urlDemo, userId });
+    await project.update({ title, intro, description, image, repository, urlDemo, userId});
     return project;
 }
 

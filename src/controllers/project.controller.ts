@@ -4,6 +4,7 @@ import { handleServerError } from "../utils/handleServerError";
 
 interface updateProjectBody{
     title: string; 
+    intro?: string;
     description: string;
     image: string;
     repository: string;
@@ -15,19 +16,38 @@ interface updateProjectBody{
  * @param res message and created project 
  */
 export const createProject = async (req: Request, res: Response) => {
-    try {
-        const userId = req.uid;
-        if(!userId){
-            return res.status(401).json({error:"No autorizado"});
-        }
-        const project = await projectService.createProject(req.body.title, userId);
-        res.status(201).json({
-            message:'Proyecto creado', 
-            project});
-    } catch (error) {
-        handleServerError(res, error);
+  try {
+    const userId = req.uid;
+    if (!userId) {
+      return res.status(401).json({ error: "No autorizado" });
     }
-}
+
+    // 🟢 Extraigo datos del body
+    const { title, intro, description, image, repository, urlDemo, technologyIds } = req.body;
+
+    // 🟢 Creo el proyecto (pasa todos los campos, no solo title)
+    const project = await projectService.createProject(
+      { title, intro, description, image, repository, urlDemo },
+      userId
+    );
+
+    // 🟢 Si hay tecnologías, las asocio
+    if (technologyIds && Array.isArray(technologyIds) && technologyIds.length > 0) {
+      await project.$set('technologies', technologyIds);
+    }
+
+    // 🟢 Recargo el proyecto con sus tecnologías incluidas
+    const projectWithTechs = await project.reload({ include: ['technologies'] });
+    console.log(projectWithTechs);
+    res.status(201).json({
+      message: 'Proyecto creado con éxito',
+      project: projectWithTechs,
+    });
+  } catch (error) {
+    handleServerError(res, error);
+  }
+};
+
 /**
  * Muestra todos los proyectos
  * @param req, solicitud HTTP
@@ -69,8 +89,8 @@ export const updateProject = async (req: Request, res: Response) => {
             return res.status(401).json({error:"No autorizado"});
         }
         const { id } = req.params;
-        const { title, description, image, repository, urlDemo } = req.body as updateProjectBody;
-        const updatedProject = await projectService.updateProject(id, title, description, image, repository, urlDemo || '', userId);
+        const { title, intro, description, image, repository, urlDemo = '' } = req.body as updateProjectBody;
+        const updatedProject = await projectService.updateProject(id, title, intro || '', description, image, repository, urlDemo, userId);
         if(!updatedProject){
             return res.status(404).json({ error: 'Project not found'});
         }
