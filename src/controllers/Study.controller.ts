@@ -1,131 +1,59 @@
+import { BaseController, ControllerConfig } from "./base/BaseController";
+import { studyService } from "../services/study.service";
 import { Request, Response } from "express";
 import { handleServerError } from "../utils/handleServerError";
-import * as studyService from "../services/study.service"
+import { StudyType } from "../models/StudyType";
+import { StudyState } from "../models/StudyState";
 
-/**
- * Estructura del cuerpo para actualizar estudio
- */
-interface updateStudyBody {
-    title: string;
-    institution: string;
-    startYear ?: number;
-    endYear ?: number;
+class StudyController extends BaseController {
+  service = studyService;
+
+  config: ControllerConfig = {
+    resourceName: 'study',
+    resourceNamePlural: 'studies',
+    createMessage: 'Estudio creado correctamente',
+    updateMessage: 'Estudio actualizado correctamente',
+    deleteMessage: 'Estudio eliminado correctamente',
+    notFoundMessage: 'Estudio no encontrado'
+  };
+
+  /** 
+   * Obtener lista de tipos de estudio desde la tabla fija StudyTypes
+   */
+  getStudyTypes = async (_req: Request, res: Response) => {
+    try {
+      const types = await StudyType.findAll({
+        attributes: ["id", "type"]
+      });
+
+      res.json({
+        count: types.length,
+        types
+      });
+
+    } catch (error) {
+      handleServerError(res, error);
+    }
+  };
+
+  /** 
+   * Obtener lista de estados de estudio desde la tabla fija StudyState
+   */
+  getStudyStates = async (_req: Request, res: Response) => {
+    try {
+      const states = await StudyState.findAll({
+        attributes: ["id", "state"]
+      });
+
+      res.json({
+        count: states.length,
+        states
+      });
+
+    } catch (error) {
+      handleServerError(res, error);
+    }
+  };
 }
 
-/**
- * Controlador para crear un nuevo estudio
- * @param req 
- * @param res 
- * @returns Nuevo estudio creado 
- */
-export const createStudy = async (req: Request, res: Response) => {
-    try {
-        const userId = req.uid;
-        if(!userId){
-            return res.status(401).json({error:"No autorizado"});
-        }
-        const newStudy = await studyService.createStudy(req.body, userId);
-        res.status(201).json({
-            message:'Estudio creado',
-            newStudy
-        });
-    } catch (error) {
-        handleServerError(res, error);
-    }
-}
-
-/**
- * Controlador para obtener todos los estudios
- * @param _req 
- * @param res 
- * @returns Todos los estudios
- */
-export const getAllStudies = async (_req: Request, res: Response) => {
-    try {
-        const studies = await studyService.getAllStudies();
-        res.status(200).json({
-            message: 'Estudios obtenidos',
-            studies});
-    } catch (error) {
-        handleServerError(res, error);
-    }
-};
-
-/**
- * Controlador para obtener un estudio por ID
- * @param req
- * @param res 
- * @returns Estudio por ID
- */
-export const getStudyById = async (req: Request, res: Response) => {
-    try {
-        const { id } = req.params;
-        const study = await studyService.getStudyById(id);
-        if (!study) {
-            return res.status(404).json({ error: 'Estudio no encontrado' });
-        }
-        res.status(200).json({
-            message: 'Estudio obtenido',
-            study});
-    } catch (error) {
-        handleServerError(res, error);
-    }
-};
-
-
-/**
- * Controlador para actualizar un estudio
- * @param req 
- * @param res
- * @returns Estudio actualizado
- */
-export const updateStudy = async (req: Request, res: Response) => {
-    try {
-        const userId = req.uid;
-        
-        if(!userId){
-            return res.status(401).json({error:"No autorizado"});
-        }
-        const { id } = req.params;
-        const { title, institution, startYear, endYear } = req.body as updateStudyBody;
-        const updatedStudy = await studyService.updateStudy(
-            id, 
-            title, 
-            institution, 
-            startYear ?? null, 
-            endYear ?? null, 
-            userId
-        );
-        if (!updatedStudy) {
-            return res.status(404).json({ error: 'Estudio no encontrado' });
-        }
-        res.status(200).json({ 
-            message: 'Estudio actualizado', 
-            updatedStudy });
-    } catch (error) {
-        handleServerError(res, error);
-    }
-};
-
-/**
- * Controlador para eliminar un estudio
- * @param req 
- * @param res 
- * @returns Estudio eliminado
- */
-export const deleteStudy = async (req: Request, res: Response) => {
-    try {
-        const userId = req.uid;
-        if(!userId){
-            return res.status(401).json({error:"No autorizado"});
-        }
-        const { id } = req.params;
-        const deleted = await studyService.deleteStudy(id, userId);
-        if(!deleted){
-            return res.status(404).json({error:"Estudio no encontrado"});
-        }
-        res.status(200).json({message:"Estudio eliminado correctamente"});
-    } catch (error) {
-        handleServerError(res, error);
-    }
-};
+export const studyController = new StudyController();

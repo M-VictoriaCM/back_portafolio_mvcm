@@ -1,72 +1,38 @@
 import { Study } from "../models/Study";
+import { BaseService } from "./base/BaseService";
 
 /**
- * Service para crear un nuevo estudio
- * @param data 
- * @param userId 
- * @returns Nuevo estudio creado
+ * Service para gestión de estudios
+ * Extiende BaseService para operaciones CRUD estándar
+ * Incluye métodos personalizados para búsquedas específicas
  */
-export const createStudy = async (data: any, userId: string) => {
-    return await Study.create({
-        ...data,
-        userId
+class StudyService extends BaseService<Study> {
+  constructor() {
+    super(Study);
+  }
+
+  /**
+   * Buscar estudios por institución
+   * @param institution Nombre de la institución
+   * @returns Array de estudios encontrados
+   */
+  async getByInstitution(institution: string): Promise<Study[]> {
+    return await this.model.findAll({ 
+      where: { institution } as any 
     });
+  }
+
+  async getByType(type: string): Promise<Study[]> {
+    return await this.model.findAll({
+      where: {type} as any
+    });
+  }
+  async getByState(state: string): Promise<Study[]> {
+    return await this.model.findAll({
+      where: {state} as any
+    });
+  }
 }
 
-/**
- * Service para obtener todos los estudios
- * @returns Todos los estudios
- */
-export const getAllStudies = async () => {
-    return await Study.findAll();
-};
-
-/**
- * Service para obtener un estudio por ID
- * @param id 
- * @returns Estudio por ID
- */
-export const getStudyById = async (id: string) => {
-    return await Study.findByPk(id);
-};
-
-/**
- * Service para actualizar un estudio
- * @param id 
- * @param title 
- * @param institution 
- * @param startYear 
- * @param endYear 
- * @param userId 
- * @returns Estudio actualizado
- */
-export const updateStudy = async (
-    id: string, 
-    title: string, 
-    institution: string, 
-    startYear:number | null, 
-    endYear:number | null,
-    userId: string
-) => {
-    const study = await Study.findOne({where:{id,userId}});
-    if (!study) {
-        return null;
-    }
-    await study.update({ title, institution, startYear, endYear });
-    return study;
-};
-
-/**
- * Service para eliminar un estudio
- * @param id 
- * @param userId 
- * @returns Estudio eliminado
- */
-export const deleteStudy = async (id: string, userId: string) => {
-    const study = await Study.findOne({ where: { id, userId } });
-    if (!study) {
-        return null;
-    }
-    await study.destroy();
-    return true;
-}
+// Exportar instancia única del servicio
+export const studyService = new StudyService();

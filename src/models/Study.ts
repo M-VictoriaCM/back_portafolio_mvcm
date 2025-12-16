@@ -1,42 +1,54 @@
-import { PrimaryKey, Model, IsUUID, DataType, Default, Column, Table, ForeignKey, BelongsTo } from "sequelize-typescript";
+import { 
+  PrimaryKey, Model, IsUUID, DataType, Default, Column, Table, 
+  ForeignKey, BelongsTo, AllowNull 
+} from "sequelize-typescript";
 import { User } from "./User";
+import { StudyType } from "./StudyType";
+import { StudyState } from "./StudyState";
 
-/**
- * Modelo de Estudio
-*/
 @Table({
-    tableName: "studies",
-    timestamps: false,
+  tableName: "studies",
+  timestamps: false,
 })
+export class Study extends Model {
+  @PrimaryKey
+  @IsUUID(4)
+  @Default(DataType.UUIDV4)
+  @Column(DataType.UUID)
+  declare id: string;
 
-export class Study extends Model{
-   @PrimaryKey
-    @IsUUID(4)
-    @Default(DataType.UUIDV4)
-    @Column(DataType.UUID)
-    declare id: string;
+  @Column(DataType.STRING)
+  title!: string;
 
-    @Column(DataType.STRING)
-    title !: string;
+  @Column(DataType.STRING)
+  institution!: string;
 
-    @Column(DataType.STRING)
-    institution !: string;
+  @Column(DataType.INTEGER)
+  startYear?: number;
 
-    @Column(DataType.INTEGER)
-    startYear ?: number;
+  @Column(DataType.INTEGER)
+  endYear?: number;
 
-    @Column(DataType.INTEGER) //este campo es opcional
-    endYear ?: number;
-    
-    @Column(DataType.ENUM('universitario', 'bachiller', 'curso'))
-    type !: 'universitario' | 'bachiller' | 'curso'
+  @ForeignKey(() => StudyType)
+  @AllowNull(false)
+  @Column(DataType.UUID)
+  studyTypeId!: string;
 
-    @ForeignKey(()=> User)
-    @Column(DataType.UUID)
-    userId !: string;
+  @ForeignKey(() => StudyState)
+  @AllowNull(false)
+  @Column(DataType.UUID)
+  studyStateId!: string;
 
-    @BelongsTo(() => User)
-    user!: User;
+  @ForeignKey(() => User)
+  @Column(DataType.UUID)
+  userId!: string;
 
+  @BelongsTo(() => User)
+  user!: User;
+
+  @BelongsTo(() => StudyType, { foreignKey: "studyTypeId" })
+  studyType!: StudyType;
+
+  @BelongsTo(() => StudyState, { foreignKey: "studyStateId" })
+  studyState!: StudyState;
 }
-

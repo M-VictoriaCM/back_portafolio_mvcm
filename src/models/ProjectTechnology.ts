@@ -18,7 +18,7 @@ export class ProjectTechnology extends Model{
     @Column(DataType.UUID)
     projectId !: string;
     
-    @BelongsTo(() => Project)
+    @BelongsTo(() => Project, { onDelete: 'CASCADE' })
     Project !: Project;
 
     @ForeignKey(() => Technology)

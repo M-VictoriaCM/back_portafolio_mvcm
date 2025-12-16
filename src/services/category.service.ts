@@ -1,42 +1,25 @@
 import { Category } from "../models/Category";
+import { BaseService } from "./base/BaseService";
 
+/**
+ * Service para gestión de categorías
+ * Extiende BaseService para operaciones CRUD estándar
+ * Incluye métodos personalizados para búsquedas específicas
+ */
+class CategoryService extends BaseService<Category> {
+  constructor() {
+    super(Category);
+  }
 
-//Crear categoría
-export const createCategory = async (data: any, userId: string)=> {
-    return await Category.create({
-        ...data,
-        userId
-    });
-}
-//Obtener todas
-export const getAllCategory = async () => {
-    return await Category.findAll();
-}
-//Obtener por ID
-export const getCategoryById = async (id: string) => {
-    return await Category.findByPk(id);
-}
-//Actualizar
-export const updateCategory = async (
-    id: string, 
-    title: string, 
-    icon: string, 
-    userId: string
-) => {
-    const category = await Category.findOne({where:{id,userId}});
-    if (!category) {
-        return null;
-    }
-    await category.update({ title, icon });
-    return category;
+  /**
+   * Buscar categoría por título
+   * @param title Título de la categoría
+   * @returns Categoría encontrada o null
+   */
+  async getByTitle(title: string): Promise<Category | null> {
+    return await this.findOne({ title } as any);
+  }
 }
 
-//Eliminar
-export const deleteCategory = async (id: string, userId: string) => {
-    const category = await Category.findOne({ where: { id, userId } });
-    if (!category) {
-        return null;
-    }
-    await category.destroy();
-    return true;
-}
+// Exportar instancia única del servicio
+export const categoryService = new CategoryService();
