@@ -33,7 +33,7 @@ const router = Router();
  *                   items:
  *                     $ref: '#/components/schemas/Badge'
  */
-router.get("/", badgeController.getAll as unknown as RequestHandler);
+router.get("/", requireToken, badgeController.getAllByUser as unknown as RequestHandler);
 
 /**
  * @swagger

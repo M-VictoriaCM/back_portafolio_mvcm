@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { BaseService } from "../../services/base/BaseService";
 import { handleServerError } from "../../utils/handleServerError";
-import { User } from "../../models/User";
+
 
 /**
  * Configuración para mensajes personalizados del controller
@@ -21,6 +21,8 @@ export interface ControllerConfig {
 export interface BaseServiceInterface {
   create(data: any, userId: string): Promise<any>;
   getAll(): Promise<any[]>;
+  getAllByUserId(userId: string, options?: any): Promise<any[]>;
+  getAllByUsername(username: string, options?: any): Promise<any[]>;
   getById(id: string): Promise<any | null>;
   update(id: string, data: any, userId: string): Promise<any | null>;
   delete(id: string, userId: string): Promise<boolean | null>;
@@ -84,6 +86,42 @@ export abstract class BaseController {
       return handleServerError(res, error);
     }
   };
+  /**
+   * Obtener recursos del usuario autenticado
+   * Para dashboard/admin (requiere autenticación)
+   */
+  getAllByUser = async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const userId = req.uid;
+      if (!userId) {
+        return res.status(401).json({ error: "No autorizado - ID de usuario no proporcionado" });
+      }
+      const items = await this.service.getAllByUserId(userId);
+      return res.status(200).json({
+        [this.config.resourceNamePlural]: items
+      });
+    } catch (error) {
+      return handleServerError(res, error);
+    }
+  };
+   /**
+   * Obtener recursos públicos de un usuario por username
+   * Para perfiles públicos (no requiere autenticación)
+   */
+  getPublicByUsername = async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const { username } = req.params;
+      if(!username){
+        return res.status(400).json({ error: "Username es requerido" });
+      }
+      const items = await this.service.getAllByUsername(username);
+      return res.status(200).json({
+        [this.config.resourceNamePlural]: items
+      });
+    } catch (error) {
+      return handleServerError(res, error);
+    }
+  }
 
   /**
    * Obtener un recurso por ID

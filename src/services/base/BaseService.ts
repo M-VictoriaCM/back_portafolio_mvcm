@@ -1,4 +1,5 @@
 import { Model, ModelStatic, FindOptions, WhereOptions } from 'sequelize';
+import { User } from '../../models/User';
 
 /**
  * Clase base genérica para servicios CRUD
@@ -46,6 +47,38 @@ export abstract class BaseService<T extends Model> {
   async getAll(options?: FindOptions<T>): Promise<T[]> {
     return await this.model.findAll(options);
   }
+
+  /**
+   * Obtener todos los registros de un usuario específico
+   * @param userId ID del usuario
+   * @param options Opciones adicionales de Sequelize (include, order, etc.)
+   * @returns Array de registros del usuario
+   */
+  async getAllByUserId(userId: string, options?: FindOptions<T>): Promise<T[]> {
+    return await this.model.findAll({
+      where: { userId } as any,
+      ...options
+    } as FindOptions<T>);
+  }
+
+  /**
+   * Obtener todos los registros de un usuario por username
+   * @param username Username del usuario
+   * @param options Opciones adicionales de Sequelize (include, order, etc.)
+   * @returns Array de registros del usuario
+   */
+  async getAllByUsername(username: string, options?: FindOptions<T>): Promise<T[]> {
+    // Importar el modelo User dinámicamente para evitar dependencias circulares
+       
+    const user = await User.findOne({ where: { username } });
+    
+    if (!user) {
+      return [];
+    }
+
+    return await this.getAllByUserId(user.id, options);
+  }
+
 
   /**
    * Obtener un registro por ID

@@ -17,7 +17,12 @@ export class User extends Model{
     @Default(DataType.UUIDV4)
     @Column(DataType.UUID)
     declare id: string;
-    
+
+    @AllowNull(true)
+    @Unique
+    @Column(DataType.STRING)
+    firebaseUid?: string;
+
     @AllowNull(false)
     @IsEmail
     @Unique
@@ -44,10 +49,10 @@ export class User extends Model{
     @Column(DataType.JSON)
     socialLinks ?: {linkedin ?: string, github ?: string};
 
-    @AllowNull(false)
+    @AllowNull(true)
     @Length({min: 6, max:255})
     @Column(DataType.STRING)
-    password !: string;
+    password ?: string;
 
     @HasMany(() => Project)
     Project!: Project[];
@@ -67,14 +72,14 @@ export class User extends Model{
     @BeforeCreate
     @BeforeUpdate
     static async hashPassword(instance: User) {
-        if(instance.changed('password')){
+        if(instance.changed('password') && instance.password){
             const saltRounds = 10;
             instance.password= await bcrypt.hash(instance.password, saltRounds);
         }
     }
     async validPassword(password:string):Promise<boolean>{
-        return await bcrypt.compare(password, this.password);
-    
+        if(!this.password) return false;
+        return await bcrypt.compare(password, this.password);   
     }
         
 }

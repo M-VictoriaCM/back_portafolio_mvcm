@@ -6,6 +6,8 @@ import { createCategorySchema, updateCategorySchema, categoryIdSchema } from "..
 
 const router = Router();
 
+router.get('/public/:username', categoryController.getPublicByUsername as unknown as RequestHandler);
+
 /**
  * @swagger
  * /api/categories:
@@ -26,7 +28,7 @@ const router = Router();
  *                   items:
  *                     $ref: '#/components/schemas/Category'
  */
-router.get('/', categoryController.getAll as unknown as RequestHandler);
+router.get('/', requireToken, categoryController.getAllByUser as unknown as RequestHandler);
 
 /**
  * @swagger
@@ -109,7 +111,7 @@ router.post('/', requireToken, validateRequest(createCategorySchema), categoryCo
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get('/:id', validateRequest(categoryIdSchema, 'params'), categoryController.getById as unknown as RequestHandler);
+router.get('/:id', requireToken, validateRequest(categoryIdSchema, 'params'), categoryController.getById as unknown as RequestHandler);
 
 /**
  * @swagger

@@ -26,7 +26,7 @@ const router = Router();
  *                   items:
  *                     $ref: '#/components/schemas/Study'
  */
-router.get('/', studyController.getAll as unknown as RequestHandler);
+router.get('/', requireToken, studyController.getAllByUser as unknown as RequestHandler);
 
 /**
  * @swagger

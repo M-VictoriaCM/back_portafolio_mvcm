@@ -30,7 +30,7 @@ const router = Router();
  *               items:
  *                 $ref: '#/components/schemas/CategoryWithTechnologies'
  */
-router.get('/', technologyController.getAllByCategory as unknown as RequestHandler);
+router.get('/', requireToken, technologyController.getAllByCategory as unknown as RequestHandler);
 
 /**
  * @swagger
@@ -38,7 +38,8 @@ router.get('/', technologyController.getAllByCategory as unknown as RequestHandl
  *   get:
  *     summary: Obtener todas las tecnologías sin agrupar
  *     tags: [Technologies]
- *     security: []
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de todas las tecnologías
@@ -52,7 +53,7 @@ router.get('/', technologyController.getAllByCategory as unknown as RequestHandl
  *                   items:
  *                     $ref: '#/components/schemas/Technology'
  */
-router.get('/all', technologyController.getAll as unknown as RequestHandler);
+router.get('/all', requireToken, technologyController.getAllByUser as unknown as RequestHandler);
 
 /**
  * @swagger

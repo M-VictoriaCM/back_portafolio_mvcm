@@ -19,6 +19,29 @@ class CategoryService extends BaseService<Category> {
   async getByTitle(title: string): Promise<Category | null> {
     return await this.findOne({ title } as any);
   }
+
+  /**
+   * Obtener categorías del usuario autenticado
+   * @param userId ID del usuario
+   * @returns Array de categorías del usuario
+   */
+  async getCagoriesByUserId(userId:string) : Promise<Category[]>{
+    return await this.getAllByUserId(userId, {
+      order: [['title','ASC']]
+    });
+  }
+
+  /**
+   * Obtener categorías públicas de un usuario por username
+   * @param username Username del usuario
+   * @returns Array de categorías del usuario
+   */
+  async getPublicCategoriesByUsername(username: string): Promise<Category[]> {
+    return await this.getAllByUsername(username, {
+      order: [['title', 'ASC']]
+    });
+  }
+
 }
 
 // Exportar instancia única del servicio

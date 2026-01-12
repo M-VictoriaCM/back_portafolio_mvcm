@@ -6,6 +6,8 @@ import { projectController } from "../controllers/project.controller";
 
 const router = Router();
 
+router.get('/public/:username', projectController.getPublicByUsername as unknown as RequestHandler);
+
 /**
  * @swagger
  * /api/projects:
@@ -26,7 +28,7 @@ const router = Router();
  *                   items:
  *                     $ref: '#/components/schemas/Project'
  */
-router.get('/', projectController.getAll as unknown as RequestHandler);
+router.get('/', requireToken, projectController.getAllByUser as unknown as RequestHandler);
 
 /**
  * @swagger
@@ -96,6 +98,7 @@ router.post('/',
  *               $ref: '#/components/schemas/Error'
  */
 router.get('/:id', 
+  requireToken,
   validateRequest(projectIdSchema), 
   projectController.getById as unknown as RequestHandler
 );

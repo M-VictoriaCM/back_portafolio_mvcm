@@ -4,6 +4,8 @@ import { generateRefreshToken, generateToken } from "../utils/tokenManager";
 import { User } from "../models/User";
 import { CustomError } from "../utils/CustomError";
 import { handleServerError } from "../utils/handleServerError";
+import {auth} from '../../config/firebase';
+
 
 interface updateProfileBody {
   username ?: string, 
@@ -12,47 +14,89 @@ interface updateProfileBody {
   aboutMe ?:string, 
   socialLinks ?:string
 }  
-
 /**
- * Iniciar sesión
+ * Controlador para autenticación con Firebase
  * @param req 
  * @param res 
- * @return void
  */
-export const login = async (req: Request, res: Response) => {
+export const firebaseAuth = async (req: Request, res: Response) => {
   try {
+    console.log('🔑 Iniciando autenticación Firebase...');
 
-    const { token, expiresIn, uid } = await userService.login(req.body);
+    const authHeader = req.headers.authorization;
 
-    generateRefreshToken(uid, res);
-    res.status(200).json({ token, expiresIn });
-  } catch (error) {
-    console.error(error);
-    const status = error instanceof CustomError ? error.statusCode : 400;
-    res.status(status).json({ error: error instanceof Error ? error.message : "Error al iniciar sesión" })
-  }
-}
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({
+        error: 'Formato de token inválido. Usa: Bearer [token]'
+      });
+    }
 
-/**
- * Controlador de registro
- * @param req 
- * @param res 
- * @return void
- */
-export const register = async (req: Request, res: Response) => {
-  try {
-    const result = await userService.register(req.body);
-    res.cookie("token", result.token, {
-      httpOnly: true,
-      secure: !(process.env.MODO === "developer"),
+    const idToken = authHeader.split(' ')[1];
+
+    if (!idToken) {
+      return res.status(401).json({
+        error: 'Token no proporcionado'
+      });
+    }
+
+    // Verificar token con Firebase
+    console.log('🔍 Verificando token con Firebase...');
+    const decoded = await auth.verifyIdToken(idToken);
+
+    console.log('✅ Token verificado correctamente');
+    const { uid, email } = decoded;
+
+    if (!email) {
+      return res.status(400).json({
+        error: 'El token no contiene email'
+      });
+    }
+
+    // Buscar o crear usuario en MySQL
+    console.log('🔍 Buscando/creando usuario en MySQL...');
+    const user = await userService.findOrCreateFromFirebase(uid, email);
+
+    console.log('✅ Usuario obtenido con ID:', user.id);
+
+    // Generar TUS tokens usando el ID de MySQL
+    const { token, expiresIn } = generateToken(user.id);
+    generateRefreshToken(user.id, res);
+
+    console.log('✅ Autenticación exitosa para:', email);
+
+    return res.status(200).json({
+      token,
+      expiresIn,
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        fullName: user.fullName,
+        urlAvatar: user.urlAvatar
+      }
     });
-    res.status(201).json(result);
+
   } catch (error) {
-    console.error("❌Erro en registro:", error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("❌ Error en firebaseAuth:", error);
+
+    if (error instanceof Error) {
+      if (error.message.includes('expired')) {
+        return res.status(401).json({
+          error: 'Token expirado'
+        });
+      }
+      if (error.message.includes('invalid')) {
+        return res.status(401).json({
+          error: 'Token inválido'
+        });
+      }
+    }
+
+    return res.status(500).json({
+      error: 'Error al autenticar usuario'
+    });
   }
 };
-
 /*
 * Controlador para refrescar el token
 */
@@ -195,13 +239,22 @@ export const updateAvatar = async (req: Request, res: Response) => {
   }
 };
 
+// user.controller.ts
+
 export const getPublicProfile = async (req: Request, res: Response) => {
   try {
-   
-    const user = await userService.getPublicProfile();
+    const { username } = req.params; // ← Recibe username de la URL
+    
+    if (!username) {
+      return res.status(400).json({ error: 'Username requerido' });
+    }
+    
+    const user = await userService.getPublicProfile(username);
+    
     if (!user) {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
+    
     res.status(200).json({
       message: 'Perfil obtenido correctamente',
       user

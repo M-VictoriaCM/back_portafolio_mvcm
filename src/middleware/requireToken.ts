@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt, { TokenExpiredError } from "jsonwebtoken";
 import { tokenVerificationErrors } from "../utils/tokenManager";
-import { JwtPayload } from "jsonwebtoken"; 
 
 // Tipo personalizado para el payload
 interface JwtPayloadWithUid extends jwt.JwtPayload {
