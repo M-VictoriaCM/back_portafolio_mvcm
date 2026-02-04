@@ -1,20 +1,33 @@
 import  jwt  from "jsonwebtoken";
 import { Response } from "express";
 
-export const generateToken = (uid:string)=>{
-    const expiresIn = 60 * 15;
+export const generateToken = (
+  uid: string,
+  extraPayload: Record<string, any> = {}
+) => {
+  const expiresIn = 60 * 15
 
-    if(!uid || typeof uid !== 'string'){
-        throw new Error("UID invalido");
-    }
-    try {
-        const token = jwt.sign({uid}, process.env.JWT_SECRET!, {expiresIn});
-        return { token, expiresIn};
-    } catch (error) {
-        console.log(error);
-        throw new Error("Error al generar el token");
-    }
+  const token = jwt.sign(
+    { uid, ...extraPayload },
+    process.env.JWT_SECRET!,
+    { expiresIn }
+  )
+
+  return { token, expiresIn }
 }
+
+
+    // if(!uid || typeof uid !== 'string'){
+    //     throw new Error("UID invalido");
+    // }
+    // try {
+    //     const token = jwt.sign({uid}, process.env.JWT_SECRET!, {expiresIn});
+    //     return { token, expiresIn};
+    // } catch (error) {
+    //     console.log(error);
+    //     throw new Error("Error al generar el token");
+    // }
+
 export const generateRefreshToken=(uid:string, res:Response)=>{
     const expiresIn = 60 * 60*24*30;
     try {

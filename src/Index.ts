@@ -9,6 +9,8 @@ import rateLimit from 'express-rate-limit';
 
 // Rutas
 import userRouter from './routes/user.routes';
+import authRouter from './routes/auth.routes';
+import securityRouter from './routes/mfa.routes';
 import categoryRouter from './routes/category.routes';
 import technologyRouter from './routes/technology.routes';
 import projectRouter from './routes/project.routes';
@@ -29,8 +31,10 @@ const PORT: number = parseInt(process.env.PORT || '3000', 10);
 const whiteList = [
     'http://localhost:3000',
     'http://localhost:5173',
+    'http://localhost:9000',  // Agregado
     'http://127.0.0.1:3000',
     'http://127.0.0.1:5173',
+    'http://127.0.0.1:9000',  // Agregado
     process.env.ORIGIN1,
     process.env.ORIGIN2
 ].filter((origin): origin is string => Boolean(origin));
@@ -44,37 +48,21 @@ app.use(helmet());
 // 2. Configuración de CORS mejorada
 const corsOptions = {
     origin: function (origin: string | undefined, callback: (err: Error | null, origin?: string | boolean) => void) {
-        // En desarrollo, permitir todos los orígenes
-        if (process.env.NODE_ENV === 'development') {
+        // Para desarrollo, permitir todos los orígenes
+        if (process.env.NODE_ENV !== 'production') {
             return callback(null, true);
         }
-
+        
         // En producción, verificar contra la lista blanca
-        if (whiteList.length === 0) {
-            console.warn('⚠️  Advertencia: No se han configurado orígenes permitidos en la lista blanca');
+        if (!origin || whiteList.includes(origin)) {
             return callback(null, true);
         }
-
-        // Permitir solicitudes sin origen (como aplicaciones móviles o curl)
-        if (!origin) {
-            return callback(null, true);
-        }
-
-        if (whiteList.includes(origin)) {
-            console.log('✅ Origen permitido:', origin);
-            return callback(null, true);
-        }
-
-        console.log('❌ Origen no permitido:', origin);
         return callback(new Error('No permitido por CORS'));
     },
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-    exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
-    maxAge: 86400, // 24 horas
-    preflightContinue: false,
-    optionsSuccessStatus: 204
+    optionsSuccessStatus: 200
 };
 
 // Aplicar configuración CORS
@@ -107,6 +95,10 @@ app.use(sanitizeRequest);
 // 6. Prevenir parámetros de consulta maliciosos
 app.use((req, res, next) => {
     // Eliminar parámetros de consulta que comiencen con $
+    if (req.path.includes('verify')) {
+        console.log("🚀 PETICIÓN DETECTADA EN:", req.path);
+        console.log("📦 BODY:", req.body);
+    }
     if (req.query) {
         Object.keys(req.query).forEach(key => {
             if (key.startsWith('$')) {
@@ -130,6 +122,8 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 
 // Rutas de la API
 app.use('/api/users', userRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/security', securityRouter);
 app.use('/api/categories', categoryRouter);
 app.use('/api/technologies', technologyRouter);
 app.use('/api/projects', projectRouter);
@@ -192,3 +186,11 @@ const main = async () => {
 };
 
 main();
+
+// En tu archivo Index.ts, justo después de crear la app
+app.use((req, res, next) => {
+  console.log('Headers recibidos:', req.headers);
+  console.log('Método:', req.method);
+  console.log('URL:', req.url);
+  next();
+});

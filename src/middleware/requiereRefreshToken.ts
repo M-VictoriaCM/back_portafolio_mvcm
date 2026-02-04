@@ -19,7 +19,8 @@ export const requireRefreshToken = (req: Request, res: Response, next: NextFunct
       throw new Error("Payload inválido");
     }
 
-    res.locals.uid = decoded.uid;
+    // Asignar a req.uid para que sea accesible en los controladores
+    req.uid = decoded.uid as string;
 
     next();
   } catch (error) {

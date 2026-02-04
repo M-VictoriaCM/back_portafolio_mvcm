@@ -5,6 +5,11 @@ declare global {
     interface Request {
       uid?: string; // User ID from JWT
       user?: User;   // Full user object (if populated by middleware)
+    firebaseUser?: {
+        uid: string
+        email?: string
+        [key: string]: any
+      }
     }
   }
 }
